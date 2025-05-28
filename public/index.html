@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Portal Distribuido A</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 50px; }
+    button {
+      display: block;
+      margin: 15px auto;
+      padding: 12px 24px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Clima</h1>
+  
+  <h1>Clima actual en Quito</h1>
+  <div id="resultado">
+    <p>Cargando...</p>
+  </div>
+  <script>
+    fetch('/clima')
+      .then(res => res.json())
+      .then(data => {
+        const div = document.getElementById('resultado');
+        div.innerHTML = `
+          <h2>${data.ciudad}</h2>
+          <p>Temperatura: <strong>${data.temperatura} °C</strong></p>
+          <p>Fuente: ${data.fuente}</p>
+        `;
+      })
+      .catch(() => {
+        document.getElementById('resultado').innerHTML = '<p>Error al obtener el clima.</p>';
+      });
+  </script>
+
+</body>
+</html>
