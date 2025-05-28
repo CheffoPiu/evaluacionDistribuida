@@ -1,0 +1,60 @@
+name: CI/CD Evaluacion
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      # 1. Primero, logueamos en Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # 2. Ahora sí construimos y subimos la imagen
+      - name: Build & push image to Docker Hub
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/portal-distribuido:latest
+
+  deploy-to-ec2:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      # (Opcional) Si quieres escribir la llave en disco y usar key_path, descomenta esto:
+      # - name: Setup SSH key file
+      #   run: |
+      #     echo "${{ secrets.EC2_SSH_KEY }}" > key.pem
+      #     chmod 600 key.pem
+
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user                # <- usa 'username' en lugar de 'user'
+          # Si prefieres pasar la llave como fichero, usa key_path: key.pem
+          key: ${{ secrets.EC2_SSH_KEY }}    # <- contenido de tu .pem como Secret
+          script: |
+            # Baja la última imagen del portal
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/portal-distribuido:latest
+
+            # Para y elimina el contenedor viejo (si existe)
+            docker stop portal || true
+            docker rm portal   || true
+
+            # Arranca el nuevo contenedor exponiendo el puerto 80
+            docker run -d \
+              --name portal \
+              -p 80:80 \
+              ${{ secrets.DOCKERHUB_USERNAME }}/portal-distribuido:latest
+
