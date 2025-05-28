@@ -25,7 +25,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/portal-distribuido:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/evaluacion:latest
 
   deploy-to-ec2:
     needs: build-and-push
@@ -46,7 +46,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}    # <- contenido de tu .pem como Secret
           script: |
             # Baja la última imagen del portal
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/portal-distribuido:latest
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/evaluacion:latest
 
             # Para y elimina el contenedor viejo (si existe)
             docker stop portal || true
@@ -56,5 +56,5 @@ jobs:
             docker run -d \
               --name portal \
               -p 80:80 \
-              ${{ secrets.DOCKERHUB_USERNAME }}/portal-distribuido:latest
+              ${{ secrets.DOCKERHUB_USERNAME }}/evaluacion:latest
 
