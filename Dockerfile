@@ -2,7 +2,7 @@
 FROM nginx:alpine
 
 # Copiamos el portal al directorio que sirve Nginx
-COPY index.html /usr/share/nginx/html/index.html
+COPY index.html /usr/share/nginx/html/public/index.html
 
 # (Opcional) si luego agregas CSS o JS:
 # COPY css/ /usr/share/nginx/html/css/
