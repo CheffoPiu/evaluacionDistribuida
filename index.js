@@ -51,10 +51,12 @@ app.listen(PORT, () => {
 const express = require('express');
 const path    = require('path');
 const axios = require('axios');
+const cors = require('cors');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.use(cors());
 // 1) Sirve archivos estáticos del directorio "public"
 app.use(express.static(path.join(__dirname, 'public')));
 
